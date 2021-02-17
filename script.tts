@@ -1,1 +1,4 @@
+X;
+Y;%apple
+Z[pie];
 G = XY + (X' + Z)(Y + Z');

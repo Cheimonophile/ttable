@@ -68,7 +68,7 @@ fn main() {
     }
 
     // get the script from in_method
-    let script = match in_method {
+    let commented_script = match in_method {
         None => {
             let mut script = String::new();
             match std::io::stdin().read_to_string(&mut script) {
@@ -104,4 +104,9 @@ fn main() {
             }
         }
     };
+
+    // remove the comment from the script
+    let script = remove_comments(commented_script);
+
+    println!("Done!");
 }
