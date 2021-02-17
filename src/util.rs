@@ -6,6 +6,13 @@ pub fn print_usage() {
 }
 
 /**
+ * prints an error
+ */
+pub fn print_error(e: std::io::Error) {
+    println!("Error: {}", e);
+}
+
+/**
  * enum for the input method
  */
 pub enum In {

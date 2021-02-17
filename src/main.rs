@@ -66,25 +66,37 @@ fn main() {
     let script = match in_method {
         None => {
             let mut script = String::new();
-            std::io::stdin().read_to_string(&mut script);
+            match std::io::stdin().read_to_string(&mut script) {
+                Err(e) =>  {
+                    print_error(e);
+                    return;
+                },
+                Ok(_)=>(),
+            };
             script
         },
         Some(in_method) => match in_method {
             In::Stdin => {
                 let mut script = String::new();
-                std::io::stdin().read_to_string(&mut script);
+                match std::io::stdin().read_to_string(&mut script) {
+                    Err(e) =>  {
+                        print_error(e);
+                        return;
+                    },
+                    Ok(_)=>(),
+                };
                 script
             },
             In::Cli(script) => script,
             In::File(filename) => {
                 match std::fs::read_to_string(filename) {
                     Err(e) => {
-                        println!("Error: {}",e);
+                        print_error(e);
                         return;
                     },
                     Ok(script) => script
                 }
             }
         }
-    }
+    };
 }
