@@ -62,6 +62,11 @@ fn main() {
         }
     }
 
+    // if no input options given, default to stdin
+    if in_method.is_none() {
+        in_method = Some(In::Stdin);
+    }
+
     // get the script from in_method
     let script = match in_method {
         None => {
