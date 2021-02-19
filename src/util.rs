@@ -1,8 +1,9 @@
+// modules
+pub mod tokenize;
+
 // uses
 use std::fs::File;
-
-// constant variables
-const whitespace: [char;3] = [' ','\t','\n'];
+use tokenize::*;
 
 /**
  * Prints usage notes for the applications
@@ -16,29 +17,6 @@ pub fn print_usage() {
  */
 pub fn print_error(e: std::io::Error) {
     println!("Error: {}", e);
-}
-
-/**
- * checks if the char is whitespace
- */
-pub fn is_whitespace(c:&char)->bool {
-    whitespace.iter().any(|ws|ws==c)
-}
-
-/**
- * checks if the char is in the alphabet
- */
-pub fn alpha(c:char)->bool {
-    let val = c as u8;
-    return (val>=65 && val<=90) || (val>=97 && val<=122);
-}
-
-/**
- * checks if the char is alphanumeric
- */
-pub fn alphanum(c:char)->bool {
-    let val = c as u8;
-    return (val>=65 && val<=90) || (val>=97 && val<=122) || (val>=48 && val<=57) || val == 95;
 }
 
 /**

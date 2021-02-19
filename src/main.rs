@@ -4,6 +4,7 @@ mod util;
 // uses
 use std::io::Read;
 use util::*;
+use util::tokenize::*;
 
 /**
  * main method
@@ -107,6 +108,24 @@ fn main() {
 
     // remove the comment from the script
     let script = remove_comments(commented_script);
+
+    // print out the top of the truth table
+    let mut line_num: usize = 0;
+    for line in script.split(',') {
+        line_num+=1;
+        
+        // parse the var
+        let var = match get_token(line.to_string()) {
+            (Some(Token::Var(var)),_) => var,
+            _ => {
+                println!("Error: Couldn't parse variable in line {}:\n\t\"{}\"",line_num,line);
+                return;
+            }
+        };
+
+        print!("{},\t",var);
+    }
+    println!("");
 
     println!("Done!");
 }
