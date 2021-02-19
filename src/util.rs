@@ -3,6 +3,7 @@ pub mod tokenize;
 
 // uses
 use std::fs::File;
+use std::io::{self};
 use tokenize::*;
 
 /**
@@ -96,4 +97,26 @@ pub enum Output {
         file:File
     },
     Stdout
+}
+
+/**
+ * impl block for output
+ */
+impl Output {
+
+    // creates a new output object from a filename string
+    pub fn file(filename:String)->io::Result<Output> {
+
+        // create the file
+        let file = match File::create(filename) {
+            Err(e) => return Err(e),
+            Ok(file) => file
+        };
+        return Ok(Output::File{file});
+    }
+    
+    // creates a new output object for stdout
+    pub fn stdout()->Output {
+        return Output::Stdout;
+    }
 }

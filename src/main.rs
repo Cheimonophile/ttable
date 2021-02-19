@@ -42,23 +42,22 @@ fn main() {
             // output option
             "-o" => {
                 out_name = Some(
-                    if i >= args.len() {
+                    if i+1 >= args.len() {
                         print_usage();
                         return;
                     }
                     else {
-                        args[i].clone()
+                        args[i+1].clone()
                     }
                 );
             },
 
             // filename option
             filename => {
-                if in_method.is_some() {
-                    print_usage();
-                    return;
+                if !in_method.is_some() {
+                    in_method = Some(In::File(filename.to_string()))
                 }
-                in_method = Some(In::File(filename.to_string()))
+                
             }
         }
     }
@@ -67,6 +66,18 @@ fn main() {
     if in_method.is_none() {
         in_method = Some(In::Stdin);
     }
+
+    // if an output file is given, create an out object
+    let output = match out_name {
+        None => Output::stdout(),
+        Some(filename) => match Output::file(filename) {
+            Err(e) => {
+                print_error(e);
+                return;
+            },
+            Ok(file) => file
+        }
+    };
 
     // get the script from in_method
     let commented_script = match in_method {
