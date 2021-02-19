@@ -68,7 +68,7 @@ fn main() {
     }
 
     // if an output file is given, create an out object
-    let output = match out_name {
+    let mut output = match out_name {
         None => Output::stdout(),
         Some(filename) => match Output::file(filename) {
             Err(e) => {
@@ -124,6 +124,11 @@ fn main() {
     let mut line_num: usize = 0;
     for line in script.split(',') {
         line_num+=1;
+
+        // print the separator
+        if line_num > 1 {
+            output.write(",\t");
+        }
         
         // parse the var
         let var = match get_token(line.to_string()) {
@@ -134,9 +139,9 @@ fn main() {
             }
         };
 
-        print!("{},\t",var);
+        output.write(var);
     }
-    println!("");
+    output.writeln("");
 
-    println!("Done!");
+    output.writeln("Done!");
 }

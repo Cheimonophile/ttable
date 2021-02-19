@@ -3,7 +3,8 @@ pub mod tokenize;
 
 // uses
 use std::fs::File;
-use std::io::{self};
+use std::io::{self,Write};
+use std::fmt::Display;
 use tokenize::*;
 
 /**
@@ -118,5 +119,36 @@ impl Output {
     // creates a new output object for stdout
     pub fn stdout()->Output {
         return Output::Stdout;
+    }
+
+    pub fn write<S:Display+AsRef<[u8]>>(&mut self, output: S) {
+        match self {
+
+            // if self is a file writer
+            Output::File{file} => {
+                file.write_all(output.as_ref()).unwrap();
+            }
+
+            // if self is stdin
+            Output::Stdout => {
+                print!("{}",output);
+            }
+        }
+    }
+
+    pub fn writeln<S:Display+AsRef<[u8]>>(&mut self, output: S) {
+        match self {
+
+            // if self is a file writer
+            Output::File{file} => {
+                file.write_all(output.as_ref()).unwrap();
+                file.write_all(&['\n' as u8]).unwrap();
+            }
+
+            // if self is stdin
+            Output::Stdout => {
+                println!("{}",output);
+            }
+        }
     }
 }
