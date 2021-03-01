@@ -143,5 +143,8 @@ fn main() {
     }
     output.writeln("");
 
+    // call the function to write the rest of the truth table
+    
+
     output.writeln("Done!");
 }

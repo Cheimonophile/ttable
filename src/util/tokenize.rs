@@ -41,15 +41,50 @@ pub enum Token {
 pub enum Op {
     Assignment,
     Disjunction,
+    NegDisjunction,
     Conjunction,
+    NegConjunction,
     ExDisjunction,
+    NegExDisjunction,
     Implication,
+    NegImplication,
     Equivalence,
+    NegEquivalence,
     PreNegation,
     PostVarNegation,
     PostOpNegation,
     Open,
     Close,
+}
+
+/**
+ * impl block for op
+ */
+impl Op {
+
+    /**
+     * returns the precidence of self
+     */
+    fn prec(&self) -> u32 {
+        match self {
+            Op::Assignment=>0,
+            Op::PreNegation=>1,
+            Op::PostVarNegation=>1,
+            Op::PostOpNegation=>1,
+            Op::Disjunction=>2,
+            Op::NegDisjunction=>2,
+            Op::Conjunction=>3,
+            Op::NegConjunction=>3,
+            Op::ExDisjunction=>4,
+            Op::NegExDisjunction=>4,
+            Op::Implication=>5,
+            Op::NegImplication=>5,
+            Op::Equivalence=>6,
+            Op::NegEquivalence=>6,
+            Op::Open=>7,
+            Op::Close=>8
+        }
+    }
 }
 
 pub fn get_token(script:String)->(Option<Token>,String) {
