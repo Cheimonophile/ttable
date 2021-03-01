@@ -122,6 +122,9 @@ impl Output {
         return Output::Stdout;
     }
 
+    /**
+     * writes output to self
+     */
     pub fn write<S:Display>(&mut self, output: S) {
         match self {
 
@@ -137,6 +140,9 @@ impl Output {
         }
     }
 
+    /**
+     * writes output to self with a newline at the end
+     */
     pub fn writeln<S:Display>(&mut self, output: S) {
         match self {
 
@@ -151,6 +157,20 @@ impl Output {
                 println!("{}",output);
             }
         }
+    }
+
+    /**
+     * writes the true value
+     */
+    pub fn write_true(&mut self) {
+        self.write(1);
+    }
+
+    /**
+     * writes the false value
+     */
+    pub fn write_false(&mut self) {
+        self.write(0);
     }
 }
 
@@ -168,8 +188,8 @@ pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<S
         let mut i = 0;
         while i < vals.len() {
             match vals[i] {
-                true => output.write("1"),
-                false => output.write("0")
+                true => output.write_true(),
+                false => output.write_false()
             }
 
             // add comma and tab
