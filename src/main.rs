@@ -146,7 +146,7 @@ fn main() {
 
     // call the function to write the rest of the truth table
     let lines: Vec<&str> = script.split(',').collect();
-    match execute(&mut output, HashMap::new(), lines.as_slice()) {
+    match execute(&mut output, Vec::new(), HashMap::new(), lines.as_slice()) {
         Err(e) => {
             print_error(e);
             return;

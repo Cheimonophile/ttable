@@ -155,7 +155,7 @@ impl Output {
 }
 
 // Err(io::Error::new(io::ErrorKind::Other, ""))
-pub fn execute(output: &mut Output,  mut var_map: HashMap<String,bool>, lines: &[&str]) -> io::Result<()> {
+pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<String,bool>, lines: &[&str]) -> io::Result<()> {
 
     // create stacks
     let val_stack: Vec<bool> = Vec::new();
@@ -163,22 +163,39 @@ pub fn execute(output: &mut Output,  mut var_map: HashMap<String,bool>, lines: &
 
     // breaks if the slice is empty
     if lines.len() < 1 {
+
+        // print every value in vals
+        let mut i = 0;
+        while i < vals.len() {
+            match vals[i] {
+                true => output.write("1"),
+                false => output.write("0")
+            }
+
+            // add comma and tab
+            if i != vals.len()-1 {
+                output.write(",\t")
+            }
+
+            // increment
+            i+=1;
+        }
+
+        // write endl
         output.writeln("");
+
         return Ok(());
     }
 
     // solve expression
     let expression = lines[0].to_string();
-    let result = "TBI";
+    let result = false;
     
-    // print the result
-    output.write(result);
-    if lines.len() > 1 {
-        output.write(",\t");
-    }
+    // add result to vals
+    vals.push(result);
 
     // recurse
-    execute(output, var_map.clone(),&lines[1..lines.len()])?;
+    execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
 
 
     return Ok(());
