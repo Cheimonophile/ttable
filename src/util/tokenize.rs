@@ -1,12 +1,12 @@
 
 // constant variables
-const whitespace: [char;3] = [' ','\t','\n'];
+const WHITESPACE: [char;3] = [' ','\t','\n'];
 
 /**
  * checks if the char is whitespace
  */
 pub fn is_whitespace(c:char)->bool {
-    whitespace.iter().any(|ws|*ws==c)
+    WHITESPACE.iter().any(|ws|*ws==c)
 }
 
 /**

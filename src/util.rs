@@ -5,6 +5,7 @@ pub mod tokenize;
 use std::fs::File;
 use std::io::{self,Write};
 use std::fmt::Display;
+use std::collections::HashMap;
 use tokenize::*;
 
 /**
@@ -151,4 +152,34 @@ impl Output {
             }
         }
     }
+}
+
+// Err(io::Error::new(io::ErrorKind::Other, ""))
+pub fn execute(output: &mut Output,  mut var_map: HashMap<String,bool>, lines: &[&str]) -> io::Result<()> {
+
+    // create stacks
+    let val_stack: Vec<bool> = Vec::new();
+    let op_stack: Vec<Op> = Vec::new();
+
+    // breaks if the slice is empty
+    if lines.len() < 1 {
+        output.writeln("");
+        return Ok(());
+    }
+
+    // solve expression
+    let expression = lines[0].to_string();
+    let result = "TBI";
+    
+    // print the result
+    output.write(result);
+    if lines.len() > 1 {
+        output.write(",\t");
+    }
+
+    // recurse
+    execute(output, var_map.clone(),&lines[1..lines.len()])?;
+
+
+    return Ok(());
 }

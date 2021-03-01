@@ -3,6 +3,7 @@ mod util;
 
 // uses
 use std::io::Read;
+use std::collections::HashMap;
 use util::*;
 use util::tokenize::*;
 
@@ -144,7 +145,17 @@ fn main() {
     output.writeln("");
 
     // call the function to write the rest of the truth table
-    
+    let lines: Vec<&str> = script.split(',').collect();
+    match execute(&mut output, HashMap::new(), lines.as_slice()) {
+        Err(e) => {
+            print_error(e);
+            return;
+        },
+        Ok(()) => {
+
+        }
+    }
+
 
     output.writeln("Done!");
 }
