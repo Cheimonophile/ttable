@@ -122,12 +122,12 @@ impl Output {
         return Output::Stdout;
     }
 
-    pub fn write<S:Display+AsRef<[u8]>>(&mut self, output: S) {
+    pub fn write<S:Display>(&mut self, output: S) {
         match self {
 
             // if self is a file writer
             Output::File{file} => {
-                file.write_all(output.as_ref()).unwrap();
+                file.write_all(format!("{}",output).as_ref()).unwrap();
             }
 
             // if self is stdin
@@ -137,12 +137,12 @@ impl Output {
         }
     }
 
-    pub fn writeln<S:Display+AsRef<[u8]>>(&mut self, output: S) {
+    pub fn writeln<S:Display>(&mut self, output: S) {
         match self {
 
             // if self is a file writer
             Output::File{file} => {
-                file.write_all(output.as_ref()).unwrap();
+                file.write_all(format!("{}",output).as_ref()).unwrap();
                 file.write_all(&['\n' as u8]).unwrap();
             }
 
