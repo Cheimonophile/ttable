@@ -208,40 +208,41 @@ pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<S
     }
 
     // solve expression
-    let expression = lines[0].to_string();
+    match evaluate(lines[0].to_string())? {
+        
+        // if variable assigned
+        Some(val) =>  {
+            let result = val_stack[0];
+
+            // append result to vals
+            vals.push(result);
     
-    // if variable assigned
-    if val_stack.len()>0 {
-        let result = val_stack[0];
+            // recurse
+            execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
+        },
 
-        // append result to vals
-        vals.push(result);
+        // if variable declared
+        None => {
 
-        // recurse
-        execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
-    }
+            // append false to new vals
+            vals.push(false);
 
-    // if variable declared
-    else {
+            // recurse once
+            execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
 
-        // append false to new vals
-        vals.push(false);
+            // change last in vals to true
+            let i = vals.len()-1;
+            vals[i] = true;
 
-        // recurse once
-        execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
-
-        // change last in vals to true
-        let i = vals.len()-1;
-        vals[i] = true;
-
-        // recurse once
-        execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
-    }
+            // recurse once
+            execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
+        }
+    };
     
-    
-
-    
-
-
     return Ok(());
+}
+
+
+fn evaluate(expr:String)->io::Result<Option<bool>> {
+    return Ok(None);
 }
