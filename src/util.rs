@@ -130,7 +130,7 @@ impl Output {
 
             // if self is a file writer
             Output::File{file} => {
-                file.write_all(format!("{}",output).as_ref()).unwrap();
+                file.write_fmt(format_args!("{}",output)).unwrap();
             }
 
             // if self is stdin
@@ -209,13 +209,38 @@ pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<S
 
     // solve expression
     let expression = lines[0].to_string();
-    let result = false;
     
-    // add result to vals
-    vals.push(result);
+    // if variable assigned
+    if val_stack.len()>0 {
+        let result = val_stack[0];
 
-    // recurse
-    execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
+        // append result to vals
+        vals.push(result);
+
+        // recurse
+        execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
+    }
+
+    // if variable declared
+    else {
+
+        // append false to new vals
+        vals.push(false);
+
+        // recurse once
+        execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
+
+        // change last in vals to true
+        let i = vals.len()-1;
+        vals[i] = true;
+
+        // recurse once
+        execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
+    }
+    
+    
+
+    
 
 
     return Ok(());
