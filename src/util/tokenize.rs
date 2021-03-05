@@ -87,7 +87,7 @@ impl Op {
     }
 }
 
-pub fn get_token(script:String)->(Option<Token>,String) {
+pub fn get_token(script: &mut String)->Option<Token> {
 
     // iterate over the chars in the string
     for i in 0..script.len() {
@@ -127,7 +127,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
             }
 
             // return the values
-            return (Some(Token::Var(var_string)),rest)
+            *script = rest;
+            return Some(Token::Var(var_string))
         }
 
         // if equivalence
@@ -139,7 +140,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::Equivalence)),rest);
+            *script = rest;
+            return Some(Token::Op(Op::Equivalence));
         }
 
         // if implication
@@ -151,7 +153,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::Implication)),rest);
+            *script = rest;
+            return Some(Token::Op(Op::Implication));
         }
 
         // if exclusive disjunction
@@ -163,7 +166,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::ExDisjunction)),rest)
+            *script = rest;
+            return Some(Token::Op(Op::ExDisjunction));
         }
 
         // if conjunction
@@ -175,7 +179,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::Conjunction)),rest)
+            *script = rest;
+            return Some(Token::Op(Op::Conjunction));
         }
 
         // if disjunction
@@ -187,7 +192,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::Disjunction)),rest)
+            *script = rest;
+            return Some(Token::Op(Op::Disjunction));
         }
 
         // if assignment
@@ -199,7 +205,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::Disjunction)),rest)
+            *script = rest;
+            return Some(Token::Op(Op::Disjunction));
         }
 
         // if prefix negation
@@ -211,7 +218,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::PreNegation)),rest)
+            *script = rest;
+            return Some(Token::Op(Op::PreNegation));
         }
 
         // if postfix variable negation
@@ -223,7 +231,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::PostVarNegation)),rest)
+            *script = rest;
+            return Some(Token::Op(Op::PostVarNegation));
         }
 
         // if postfix operator negation
@@ -235,7 +244,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::PostOpNegation)),rest)
+            *script = rest;
+            return Some(Token::Op(Op::PostOpNegation));
         }
 
         // if open parenthesis
@@ -247,7 +257,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::Open)),rest)
+            *script = rest;
+            return Some(Token::Op(Op::Open));
         }
 
         // if close parenthesis
@@ -259,7 +270,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::Op(Op::Close)),rest)
+            *script = rest;
+            return Some(Token::Op(Op::Close));
         }
 
         // if end line
@@ -271,7 +283,8 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::EndLine),rest)
+            *script = rest;
+            return Some(Token::EndLine);
         }
 
         // if end script
@@ -283,10 +296,11 @@ pub fn get_token(script:String)->(Option<Token>,String) {
                 rest.push(script.as_bytes()[j] as char)
             }
 
-            return (Some(Token::EndScript),rest)
+            *script = rest;
+            return Some(Token::EndScript);
         }
         
     }
 
-    return (None,script);
+    return None;
 }

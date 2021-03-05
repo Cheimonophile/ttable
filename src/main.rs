@@ -124,6 +124,7 @@ fn main() {
     // print out the top of the truth table
     let mut line_num: usize = 0;
     for line in script.split(',') {
+        let mut line = line.to_string();
         line_num+=1;
 
         // print the separator
@@ -132,8 +133,8 @@ fn main() {
         }
         
         // parse the var
-        let var = match get_token(line.to_string()) {
-            (Some(Token::Var(var)),_) => var,
+        let var = match get_token(&mut line) {
+            Some(Token::Var(var)) => var,
             _ => {
                 println!("Error: Couldn't parse variable in line {}:\n\t\"{}\"",line_num,line);
                 return;

@@ -177,10 +177,6 @@ impl Output {
 // Err(io::Error::new(io::ErrorKind::Other, ""))
 pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<String,bool>, lines: &[&str]) -> io::Result<()> {
 
-    // create stacks
-    let val_stack: Vec<bool> = Vec::new();
-    let op_stack: Vec<Op> = Vec::new();
-
     // breaks if the slice is empty
     if lines.len() < 1 {
 
@@ -208,14 +204,12 @@ pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<S
     }
 
     // solve expression
-    match evaluate(lines[0].to_string())? {
+    match evaluate(lines[0].to_string(), &mut var_map)? {
         
         // if variable assigned
         Some(val) =>  {
-            let result = val_stack[0];
-
             // append result to vals
-            vals.push(result);
+            vals.push(val);
     
             // recurse
             execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
@@ -243,6 +237,14 @@ pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<S
 }
 
 
-fn evaluate(expr:String)->io::Result<Option<bool>> {
+fn evaluate(expression:String,var_map:&mut HashMap<String,bool>)->io::Result<Option<bool>> {
+
+    // create stacks
+    let val_stack: Vec<bool> = Vec::new();
+    let op_stack: Vec<Op> = Vec::new();
+
+    // loop over expr
+    
+
     return Ok(None);
 }
