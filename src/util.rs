@@ -54,6 +54,11 @@ pub fn remove_comments(old_script: String) -> String {
                     // if the beginning of a multiline comment
                     '[' => comment_state = CommentState::Multiline,
                     
+                    // if whitespace
+                    ' ' => (),
+                    '\t' =>(),
+                    '\n' => (),
+
                     // if not the beginning of a comment
                     c => new_script.push(c)
                 }
@@ -65,7 +70,6 @@ pub fn remove_comments(old_script: String) -> String {
                 // exit the comment state
                 if c == '\n' {
                     comment_state = CommentState::None;
-                    new_script.push('\n');
                 }
             }
 
@@ -174,7 +178,9 @@ impl Output {
     }
 }
 
-// Err(io::Error::new(io::ErrorKind::Other, ""))
+/**
+ * Executes the script
+ */
 pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<String,bool>, lines: &[&str]) -> io::Result<()> {
 
     // breaks if the slice is empty
@@ -220,6 +226,7 @@ pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<S
 
             // append false to new vals
             vals.push(false);
+            var_map.insert(lines[0].to_string(),false);
 
             // recurse once
             execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
@@ -227,6 +234,7 @@ pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<S
             // change last in vals to true
             let i = vals.len()-1;
             vals[i] = true;
+            var_map.insert(lines[0].to_string(),true);
 
             // recurse once
             execute(output, vals.clone(), var_map.clone(),&lines[1..lines.len()])?;
@@ -237,14 +245,392 @@ pub fn execute(output: &mut Output,  mut vals: Vec<bool>, mut var_map: HashMap<S
 }
 
 
-fn evaluate(expression:String,var_map:&mut HashMap<String,bool>)->io::Result<Option<bool>> {
+fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result<Option<bool>> {
 
     // create stacks
-    let val_stack: Vec<bool> = Vec::new();
-    let op_stack: Vec<Op> = Vec::new();
+    let mut val_stack: Vec<bool> = Vec::new();
+    let mut op_stack: Vec<Op> = Vec::new();
+    let mut var_stack: Vec<String> = Vec::new();
 
     // loop over expr
-    
+    let mut token = get_token(&mut expression);
+    while token.is_some() {
 
-    return Ok(None);
+        // perform an action depending on the token
+        match token {
+
+            // if none
+            None => (),
+
+            // if endline
+            Some(Token::EndLine) => (),
+
+            // if endscript
+            Some(Token::EndScript) => (),
+
+            // if the token is a value
+            Some(Token::Val(val)) => {
+                if !op_stack.is_empty() && *op_stack.last().unwrap() == Op::PreNegation {
+                    val_stack.push(!val);
+                }
+                else {
+                    val_stack.push(val);
+                }
+                
+            },
+
+            // if token is a variable
+            Some(Token::Var(var)) => {
+                match var_map.get(&var) {
+
+                    // if the variable has been assigned.
+                    Some(val) => {
+                        val_stack.push(*val);
+                    },
+
+                    // if the variable has not been assigned
+                    None => {
+                        
+                        // if there is room for an operator
+                        if op_stack.is_empty() && var_stack.is_empty() {
+                            var_stack.push(var);
+                        }
+
+                        // if there isn't room for an operator.
+                        else {
+                            return Err(io::Error::new(io::ErrorKind::Other, format!("variable {} not assigned", var)))
+                        }
+                    }
+
+                }
+            },
+
+            // if the token is an operator
+            Some(Token::Op(op)) => {
+
+                // if the previous operators precidence is lower
+                while !op_stack.is_empty() && *op_stack.last().unwrap() != Op::Open && op_stack.last().unwrap().prec() > op.prec() {
+
+                    // get operator
+                    let operator = op_stack.pop().unwrap();
+
+                    // choose operation
+                    match operator {
+
+                        // if assignment
+                        Op::Assignment => {
+
+                            var_map.insert(match var_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no variable for asssignment"));
+                                },
+                                Some(var) => var
+                            }, match val_stack.last() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for asssignment"));
+                                },
+                                Some(val) => *val
+                            });
+                        },
+
+                        // if disjunction
+                        Op::Disjunction => {
+
+                            // get values
+                            let b = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // get values
+                            let a = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // do calculations
+                            let result = a || b;
+                            val_stack.push(result);
+                        }
+
+                        // if neg disjunction
+                        Op::NegDisjunction => {
+
+                            // get values
+                            let b = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // get values
+                            let a = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // do calculations
+                            let result = a || b;
+                            val_stack.push(!result);
+                        }
+
+                        // if conjunction
+                        Op::Conjunction => {
+
+                            // get values
+                            let b = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // get values
+                            let a = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // do calculations
+                            let result = a && b;
+                            val_stack.push(result);
+                        }
+
+                        // if neg conjunction
+                        Op::NegConjunction => {
+
+                            // get values
+                            let b = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // get values
+                            let a = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // do calculations
+                            let result = a && b;
+                            val_stack.push(!result);
+                        }
+
+                        // if exclusive disjunction
+                        Op::ExDisjunction => {
+
+                            // get values
+                            let b = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // get values
+                            let a = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // do calculations
+                            let result = (!a && b) || (a && !b);
+                            val_stack.push(result);
+                        }
+
+                        // if neg exclusive disjunction
+                        Op::NegExDisjunction => {
+
+                            // get values
+                            let b = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // get values
+                            let a = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // do calculations
+                            let result = (!a && b) || (a && !b);
+                            val_stack.push(!result);
+                        }
+
+                        // if implication
+                        Op::Implication => {
+
+                            // get values
+                            let b = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // get values
+                            let a = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // do calculations
+                            let result = !a || b;
+                            val_stack.push(result);
+                        }
+
+                        // if neg implication
+                        Op::NegImplication => {
+
+                            // get values
+                            let b = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // get values
+                            let a = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // do calculations
+                            let result = !a || b;
+                            val_stack.push(!result);
+                        }
+
+                        // if equivalence
+                        Op::Equivalence => {
+
+                            // get values
+                            let b = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // get values
+                            let a = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // do calculations
+                            let result = a==b;
+                            val_stack.push(result);
+                        }
+
+                        // if neg equivalence
+                        Op::NegEquivalence => {
+
+                            // get values
+                            let b = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // get values
+                            let a = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                                },
+                                Some(val) => val
+                            };
+
+                            // do calculations
+                            let result = a==b;
+                            val_stack.push(!result);
+                        }
+
+                        // if prenegation
+                        Op::PreNegation => {
+
+                            // add pre negation to op stack
+                            op_stack.push(operator);
+                        }
+
+                        // if post var negation
+                        Op::PostValNegation => {
+                            let val = match val_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for negation"));
+                                },
+                                Some(val) => val
+                            };
+
+                            val_stack.push(!val);
+                        }
+
+                        // if post op negation
+                        Op::PostOpNegation => {
+                            let op = match op_stack.pop() {
+                                None => {
+                                    return Err(io::Error::new(io::ErrorKind::Other, "no operator for negation"));
+                                },
+                                Some(val) => val
+                            };
+
+                            op_stack.push(match op.flip() {
+                                Err(e) => {
+                                    return Err(e);
+                                },
+                                Ok(op) => op
+                            });
+                        }
+
+                        // if op is an open
+                        Op::Open => (),
+
+                        // if op is close
+                        Op::Close => ()
+                    }
+                }
+
+                // add the operator to the operator stack
+                op_stack.push(op);
+            }
+        }
+
+        // get the next token
+        token = get_token(&mut expression);
+    }
+
+
+    // return the result
+    if val_stack.is_empty() {
+        return Ok(None);
+    }
+    return Ok(Some(val_stack.pop().unwrap()))
+    
 }

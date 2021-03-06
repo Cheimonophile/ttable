@@ -1,4 +1,7 @@
 
+// uses
+use std::io;
+
 // constant variables
 const WHITESPACE: [char;3] = [' ','\t','\n'];
 
@@ -29,6 +32,7 @@ pub fn is_alphanum(c:char)->bool {
  * token enum for tokenizing
  */
 pub enum Token {
+    Val(bool),
     Var(String),
     Op(Op),
     EndLine,
@@ -38,6 +42,7 @@ pub enum Token {
 /** 
  * Operation enum for operationss
  */
+#[derive(PartialEq)]
 pub enum Op {
     Assignment,
     Disjunction,
@@ -51,10 +56,10 @@ pub enum Op {
     Equivalence,
     NegEquivalence,
     PreNegation,
-    PostVarNegation,
+    PostValNegation,
     PostOpNegation,
     Open,
-    Close,
+    Close
 }
 
 /**
@@ -65,11 +70,11 @@ impl Op {
     /**
      * returns the precidence of self
      */
-    fn prec(&self) -> u32 {
+    pub fn prec(&self) -> i32 {
         match self {
             Op::Assignment=>0,
             Op::PreNegation=>1,
-            Op::PostVarNegation=>1,
+            Op::PostValNegation=>1,
             Op::PostOpNegation=>1,
             Op::Disjunction=>2,
             Op::NegDisjunction=>2,
@@ -82,11 +87,35 @@ impl Op {
             Op::Equivalence=>6,
             Op::NegEquivalence=>6,
             Op::Open=>7,
-            Op::Close=>8
+            Op::Close=>-1
         }
+    }
+
+    /**
+     * 
+     */
+    pub fn flip(&self) -> io::Result<Op> {
+        Ok(match self {
+            Op::Disjunction=>Op::NegDisjunction,
+            Op::NegDisjunction=>Op::Disjunction,
+            Op::Conjunction=>Op::NegConjunction,
+            Op::NegConjunction=>Op::Conjunction,
+            Op::ExDisjunction=>Op::NegExDisjunction,
+            Op::NegExDisjunction=>Op::ExDisjunction,
+            Op::Implication=>Op::NegImplication,
+            Op::NegImplication=>Op::Implication,
+            Op::Equivalence=>Op::NegEquivalence,
+            Op::NegEquivalence=>Op::Equivalence,
+            _=> {
+                return Err(io::Error::new(io::ErrorKind::Other, "operator can't be negated"));
+            }
+        })
     }
 }
 
+/**
+ * gets a token from the string, shrinking the sring in the process
+ */
 pub fn get_token(script: &mut String)->Option<Token> {
 
     // iterate over the chars in the string
@@ -206,7 +235,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::Disjunction));
+            return Some(Token::Op(Op::Assignment));
         }
 
         // if prefix negation
@@ -232,7 +261,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::PostVarNegation));
+            return Some(Token::Op(Op::PostValNegation));
         }
 
         // if postfix operator negation
@@ -298,6 +327,19 @@ pub fn get_token(script: &mut String)->Option<Token> {
 
             *script = rest;
             return Some(Token::EndScript);
+        }
+
+        // if c is a boolean value
+        if c == '1' || c == '0' {
+
+            let l = script.len();
+            *script = script[1..l].to_string();
+            if c== '1' {
+                return Some(Token::Val(true));
+            }
+            if c=='0' {
+                return Some(Token::Val(false));
+            }
         }
         
     }

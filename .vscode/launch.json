@@ -19,7 +19,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["script.tts","-o","script.out"],
+            "args": ["script.tts"],
             "cwd": "${workspaceFolder}"
         },
         {
