@@ -1,4 +1,4 @@
 X,
 Y,%apple
 Z[pie],
-G = X*Y + (X' + Z)*(Y + Z').
+G: X*Y + (X' + Z)*(Y + Z').

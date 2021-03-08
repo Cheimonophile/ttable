@@ -1,4 +1,25 @@
 
+// operators
+pub const ASSIGNMENT: &str = ":";
+pub const PRE_NEGATION: &str = "~";
+pub const POST_VAL_NEGATION: &str = "\'";
+pub const POST_OP_NEGATION: &str = "!";
+pub const DISJUNCTION: &str = "+";
+pub const NEG_DISJUNCTION: &str = "+!";
+pub const CONJUNCTION: &str = "*";
+pub const NEG_CONJUNCTION: &str = "*!";
+pub const EX_DISJUNCTION: &str = "@";
+pub const NEG_EX_DISJUNCTION: &str = "@!";
+pub const IMPLICATION: &str = ">";
+pub const NEG_IMPLICATION: &str = ">!";
+pub const EQUIVALENCE: &str = "=";
+pub const NEG_EQUIVALENCE: &str = "=!";
+pub const OPEN: &str = "(";
+pub const CLOSE: &str = ")";
+
+
+
+
 // uses
 use std::io;
 
@@ -34,84 +55,60 @@ pub fn is_alphanum(c:char)->bool {
 pub enum Token {
     Val(bool),
     Var(String),
-    Op(Op),
+    Op(&'static str),
     EndLine,
     EndScript
 }
 
-/** 
- * Operation enum for operationss
- */
-#[derive(PartialEq)]
-pub enum Op {
-    Assignment,
-    Disjunction,
-    NegDisjunction,
-    Conjunction,
-    NegConjunction,
-    ExDisjunction,
-    NegExDisjunction,
-    Implication,
-    NegImplication,
-    Equivalence,
-    NegEquivalence,
-    PreNegation,
-    PostValNegation,
-    PostOpNegation,
-    Open,
-    Close
-}
-
 /**
- * impl block for op
+ * Returns the precidence of the operator.
  */
-impl Op {
-
-    /**
-     * returns the precidence of self
-     */
-    pub fn prec(&self) -> i32 {
-        match self {
-            Op::Assignment=>0,
-            Op::PreNegation=>1,
-            Op::PostValNegation=>1,
-            Op::PostOpNegation=>1,
-            Op::Disjunction=>2,
-            Op::NegDisjunction=>2,
-            Op::Conjunction=>3,
-            Op::NegConjunction=>3,
-            Op::ExDisjunction=>4,
-            Op::NegExDisjunction=>4,
-            Op::Implication=>5,
-            Op::NegImplication=>5,
-            Op::Equivalence=>6,
-            Op::NegEquivalence=>6,
-            Op::Open=>7,
-            Op::Close=>-1
+pub fn prec(op:&str) -> io::Result<i32> {
+    match op {
+        ASSIGNMENT=>Ok(0),
+        PRE_NEGATION=>Ok(1),
+        POST_VAL_NEGATION=>Ok(1),
+        POST_OP_NEGATION=>Ok(1),
+        DISJUNCTION=>Ok(2),
+        NEG_DISJUNCTION=>Ok(2),
+        CONJUNCTION=>Ok(3),
+        NEG_CONJUNCTION=>Ok(3),
+        EX_DISJUNCTION=>Ok(4),
+        NEG_EX_DISJUNCTION=>Ok(4),
+        IMPLICATION=>Ok(5),
+        NEG_IMPLICATION=>Ok(5),
+        EQUIVALENCE=>Ok(6),
+        NEG_EQUIVALENCE=>Ok(6),
+        OPEN=>Ok(7),
+        CLOSE=>Ok(-1),
+        _=> {
+            return Err(io::Error::new(io::ErrorKind::Other, format!("unrecognized operator {}", op)));
         }
     }
-
-    /**
-     * 
-     */
-    pub fn flip(&self) -> io::Result<Op> {
-        Ok(match self {
-            Op::Disjunction=>Op::NegDisjunction,
-            Op::NegDisjunction=>Op::Disjunction,
-            Op::Conjunction=>Op::NegConjunction,
-            Op::NegConjunction=>Op::Conjunction,
-            Op::ExDisjunction=>Op::NegExDisjunction,
-            Op::NegExDisjunction=>Op::ExDisjunction,
-            Op::Implication=>Op::NegImplication,
-            Op::NegImplication=>Op::Implication,
-            Op::Equivalence=>Op::NegEquivalence,
-            Op::NegEquivalence=>Op::Equivalence,
-            _=> {
-                return Err(io::Error::new(io::ErrorKind::Other, "operator can't be negated"));
-            }
-        })
-    }
 }
+
+
+/**
+ * Flips the operator
+ */
+pub fn flip(op:&str) -> io::Result<&str> {
+    Ok(match op {
+        DISJUNCTION=>NEG_DISJUNCTION,
+        NEG_DISJUNCTION=>DISJUNCTION,
+        CONJUNCTION=>NEG_CONJUNCTION,
+        NEG_CONJUNCTION=>CONJUNCTION,
+        EX_DISJUNCTION=>NEG_EX_DISJUNCTION,
+        NEG_EX_DISJUNCTION=>EX_DISJUNCTION,
+        IMPLICATION=>NEG_IMPLICATION,
+        NEG_IMPLICATION=>IMPLICATION,
+        EQUIVALENCE=>NEG_EQUIVALENCE,
+        NEG_EQUIVALENCE=>EQUIVALENCE,
+        _=> {
+            return Err(io::Error::new(io::ErrorKind::Other, "operator can't be negated"));
+        }
+    })
+}
+
 
 /**
  * gets a token from the string, shrinking the sring in the process
@@ -161,29 +158,29 @@ pub fn get_token(script: &mut String)->Option<Token> {
         }
 
         // if equivalence
-        if script.len() > i+1 && [c,script.as_bytes()[i+1] as char] == ['=','='] {
+        if c == '=' {
 
             // create a new string without the token
             let mut rest = String::new();
-            for j in i+2..script.len() {
+            for j in i+1..script.len() {
                 rest.push(script.as_bytes()[j] as char)
             }
 
             *script = rest;
-            return Some(Token::Op(Op::Equivalence));
+            return Some(Token::Op(EQUIVALENCE));
         }
 
         // if implication
-        if script.len() > i+1 && [c,script.as_bytes()[i+1] as char] == ['-','>'] {
+        if c == '>' {
 
             // create a new string without the token
             let mut rest = String::new();
-            for j in i+2..script.len() {
+            for j in i+1..script.len() {
                 rest.push(script.as_bytes()[j] as char)
             }
 
             *script = rest;
-            return Some(Token::Op(Op::Implication));
+            return Some(Token::Op(IMPLICATION));
         }
 
         // if exclusive disjunction
@@ -196,7 +193,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::ExDisjunction));
+            return Some(Token::Op(EX_DISJUNCTION));
         }
 
         // if conjunction
@@ -209,7 +206,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::Conjunction));
+            return Some(Token::Op(CONJUNCTION));
         }
 
         // if disjunction
@@ -222,7 +219,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::Disjunction));
+            return Some(Token::Op(DISJUNCTION));
         }
 
         // if assignment
@@ -235,7 +232,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::Assignment));
+            return Some(Token::Op(ASSIGNMENT));
         }
 
         // if prefix negation
@@ -248,7 +245,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::PreNegation));
+            return Some(Token::Op(PRE_NEGATION));
         }
 
         // if postfix variable negation
@@ -261,7 +258,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::PostValNegation));
+            return Some(Token::Op(POST_VAL_NEGATION));
         }
 
         // if postfix operator negation
@@ -274,7 +271,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::PostOpNegation));
+            return Some(Token::Op(POST_OP_NEGATION));
         }
 
         // if open parenthesis
@@ -287,7 +284,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::Open));
+            return Some(Token::Op(OPEN));
         }
 
         // if close parenthesis
@@ -300,7 +297,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
             }
 
             *script = rest;
-            return Some(Token::Op(Op::Close));
+            return Some(Token::Op(CLOSE));
         }
 
         // if end line

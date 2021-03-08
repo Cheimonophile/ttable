@@ -249,7 +249,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
 
     // create stacks
     let mut val_stack: Vec<bool> = Vec::new();
-    let mut op_stack: Vec<Op> = Vec::new();
+    let mut op_stack: Vec<&str> = Vec::new();
     let mut var_stack: Vec<String> = Vec::new();
 
     // loop over expr
@@ -270,7 +270,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
 
             // if the token is a value
             Some(Token::Val(val)) => {
-                if !op_stack.is_empty() && *op_stack.last().unwrap() == Op::PreNegation {
+                if !op_stack.is_empty() && *op_stack.last().unwrap() == PRE_NEGATION {
                     val_stack.push(!val);
                 }
                 else {
@@ -309,7 +309,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
             Some(Token::Op(op)) => {
 
                 // if the previous operators precidence is lower
-                while !op_stack.is_empty() && *op_stack.last().unwrap() != Op::Open && op_stack.last().unwrap().prec() > op.prec() {
+                while !op_stack.is_empty() && *op_stack.last().unwrap() != OPEN && prec(op_stack.last().unwrap()).unwrap() > prec(op).unwrap() {
 
                     // get operator
                     let operator = op_stack.pop().unwrap();
@@ -318,7 +318,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                     match operator {
 
                         // if assignment
-                        Op::Assignment => {
+                        ASSIGNMENT => {
 
                             var_map.insert(match var_stack.pop() {
                                 None => {
@@ -334,7 +334,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         },
 
                         // if disjunction
-                        Op::Disjunction => {
+                        DISJUNCTION => {
 
                             // get values
                             let b = match val_stack.pop() {
@@ -358,7 +358,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if neg disjunction
-                        Op::NegDisjunction => {
+                        NEG_DISJUNCTION => {
 
                             // get values
                             let b = match val_stack.pop() {
@@ -382,7 +382,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if conjunction
-                        Op::Conjunction => {
+                        CONJUNCTION => {
 
                             // get values
                             let b = match val_stack.pop() {
@@ -406,7 +406,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if neg conjunction
-                        Op::NegConjunction => {
+                        NEG_CONJUNCTION => {
 
                             // get values
                             let b = match val_stack.pop() {
@@ -430,7 +430,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if exclusive disjunction
-                        Op::ExDisjunction => {
+                        EX_DISJUNCTION => {
 
                             // get values
                             let b = match val_stack.pop() {
@@ -454,7 +454,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if neg exclusive disjunction
-                        Op::NegExDisjunction => {
+                        NEG_EX_DISJUNCTION => {
 
                             // get values
                             let b = match val_stack.pop() {
@@ -478,7 +478,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if implication
-                        Op::Implication => {
+                        IMPLICATION => {
 
                             // get values
                             let b = match val_stack.pop() {
@@ -502,7 +502,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if neg implication
-                        Op::NegImplication => {
+                        NEG_IMPLICATION => {
 
                             // get values
                             let b = match val_stack.pop() {
@@ -526,7 +526,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if equivalence
-                        Op::Equivalence => {
+                        EQUIVALENCE => {
 
                             // get values
                             let b = match val_stack.pop() {
@@ -550,7 +550,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if neg equivalence
-                        Op::NegEquivalence => {
+                        NEG_EQUIVALENCE => {
 
                             // get values
                             let b = match val_stack.pop() {
@@ -574,14 +574,14 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if prenegation
-                        Op::PreNegation => {
+                        PRE_NEGATION => {
 
                             // add pre negation to op stack
                             op_stack.push(operator);
                         }
 
                         // if post var negation
-                        Op::PostValNegation => {
+                        POST_VAL_NEGATION => {
                             let val = match val_stack.pop() {
                                 None => {
                                     return Err(io::Error::new(io::ErrorKind::Other, "no value for negation"));
@@ -593,7 +593,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                         }
 
                         // if post op negation
-                        Op::PostOpNegation => {
+                        POST_OP_NEGATION => {
                             let op = match op_stack.pop() {
                                 None => {
                                     return Err(io::Error::new(io::ErrorKind::Other, "no operator for negation"));
@@ -601,7 +601,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                                 Some(val) => val
                             };
 
-                            op_stack.push(match op.flip() {
+                            op_stack.push(match flip(op) {
                                 Err(e) => {
                                     return Err(e);
                                 },
@@ -609,11 +609,8 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                             });
                         }
 
-                        // if op is an open
-                        Op::Open => (),
-
-                        // if op is close
-                        Op::Close => ()
+                        // if else
+                        _ => ()
                     }
                 }
 
