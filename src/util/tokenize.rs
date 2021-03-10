@@ -67,8 +67,6 @@ pub fn prec(op:&str) -> io::Result<i32> {
     match op {
         ASSIGNMENT=>Ok(0),
         PRE_NEGATION=>Ok(1),
-        POST_VAL_NEGATION=>Ok(1),
-        POST_OP_NEGATION=>Ok(1),
         DISJUNCTION=>Ok(2),
         NEG_DISJUNCTION=>Ok(2),
         CONJUNCTION=>Ok(3),
@@ -79,7 +77,9 @@ pub fn prec(op:&str) -> io::Result<i32> {
         NEG_IMPLICATION=>Ok(5),
         EQUIVALENCE=>Ok(6),
         NEG_EQUIVALENCE=>Ok(6),
-        OPEN=>Ok(7),
+        POST_VAL_NEGATION=>Ok(7),
+        POST_OP_NEGATION=>Ok(7),
+        OPEN=>Ok(8),
         CLOSE=>Ok(-1),
         _=> {
             return Err(io::Error::new(io::ErrorKind::Other, format!("unrecognized operator {}", op)));
@@ -223,7 +223,7 @@ pub fn get_token(script: &mut String)->Option<Token> {
         }
 
         // if assignment
-        if c == '=' {
+        if c == ':' {
 
             // create a new string without the token
             let mut rest = String::new();

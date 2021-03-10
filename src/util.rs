@@ -614,8 +614,23 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                     }
                 }
 
+                // handle if op is close
+                if op == CLOSE {
+                    match op_stack.pop() {
+                        None=> {
+                            return Err(io::Error::new(io::ErrorKind::Other, "unexpected close parenthesis"));
+                        }
+                        Some(OPEN)=>(),
+                        Some(_)=>{
+                            return Err(io::Error::new(io::ErrorKind::Other, "unexpected close parenthesis"));
+                        }
+                    }
+                }
+
                 // add the operator to the operator stack
-                op_stack.push(op);
+                else {
+                    op_stack.push(op);
+                }
             }
         }
 
