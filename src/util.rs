@@ -178,6 +178,304 @@ impl Output {
     }
 }
 
+fn operate(operator:&str,op_stack:&mut Vec<&str>,val_stack:&mut Vec<bool>,var_stack:&mut Vec<String>,var_map:&mut HashMap<String,bool>) -> io::Result<()> {
+    match operator {
+
+        // if assignment
+        ASSIGNMENT => {
+
+            var_map.insert(match var_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no variable for asssignment"));
+                },
+                Some(var) => var
+            }, match val_stack.last() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for asssignment"));
+                },
+                Some(val) => *val
+            });
+        },
+
+        // if disjunction
+        DISJUNCTION => {
+
+            // get values
+            let b = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // get values
+            let a = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // do calculations
+            let result = a || b;
+            val_stack.push(result);
+        }
+
+        // if neg disjunction
+        NEG_DISJUNCTION => {
+
+            // get values
+            let b = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // get values
+            let a = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // do calculations
+            let result = a || b;
+            val_stack.push(!result);
+        }
+
+        // if conjunction
+        CONJUNCTION => {
+
+            // get values
+            let b = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // get values
+            let a = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // do calculations
+            let result = a && b;
+            val_stack.push(result);
+        }
+
+        // if neg conjunction
+        NEG_CONJUNCTION => {
+
+            // get values
+            let b = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // get values
+            let a = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // do calculations
+            let result = a && b;
+            val_stack.push(!result);
+        }
+
+        // if exclusive disjunction
+        EX_DISJUNCTION => {
+
+            // get values
+            let b = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // get values
+            let a = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // do calculations
+            let result = (!a && b) || (a && !b);
+            val_stack.push(result);
+        }
+
+        // if neg exclusive disjunction
+        NEG_EX_DISJUNCTION => {
+
+            // get values
+            let b = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // get values
+            let a = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // do calculations
+            let result = (!a && b) || (a && !b);
+            val_stack.push(!result);
+        }
+
+        // if implication
+        IMPLICATION => {
+
+            // get values
+            let b = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // get values
+            let a = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // do calculations
+            let result = !a || b;
+            val_stack.push(result);
+        }
+
+        // if neg implication
+        NEG_IMPLICATION => {
+
+            // get values
+            let b = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // get values
+            let a = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // do calculations
+            let result = !a || b;
+            val_stack.push(!result);
+        }
+
+        // if equivalence
+        EQUIVALENCE => {
+
+            // get values
+            let b = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // get values
+            let a = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // do calculations
+            let result = a==b;
+            val_stack.push(result);
+        }
+
+        // if neg equivalence
+        NEG_EQUIVALENCE => {
+
+            // get values
+            let b = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // get values
+            let a = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
+                },
+                Some(val) => val
+            };
+
+            // do calculations
+            let result = a==b;
+            val_stack.push(!result);
+        }
+
+        // if prenegation
+        PRE_NEGATION => (),
+
+        // if post var negation
+        POST_VAL_NEGATION => {
+            let val = match val_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no value for negation"));
+                },
+                Some(val) => val
+            };
+
+            val_stack.push(!val);
+        }
+
+        // if post op negation
+        POST_OP_NEGATION => {
+            let op = match op_stack.pop() {
+                None => {
+                    return Err(io::Error::new(io::ErrorKind::Other, "no operator for negation"));
+                },
+                Some(val) => val
+            };
+
+            op_stack.push(match flip(op) {
+                Err(e) => {
+                    return Err(e);
+                },
+                Ok(op) => op
+            });
+        }
+
+        // if else
+        _ => ()
+    };
+
+    return Ok(());
+}
+
 /**
  * Executes the script
  */
@@ -315,303 +613,7 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
                     let operator = op_stack.pop().unwrap();
 
                     // choose operation
-                    match operator {
-
-                        // if assignment
-                        ASSIGNMENT => {
-
-                            var_map.insert(match var_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no variable for asssignment"));
-                                },
-                                Some(var) => var
-                            }, match val_stack.last() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for asssignment"));
-                                },
-                                Some(val) => *val
-                            });
-                        },
-
-                        // if disjunction
-                        DISJUNCTION => {
-
-                            // get values
-                            let b = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // get values
-                            let a = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // do calculations
-                            let result = a || b;
-                            val_stack.push(result);
-                        }
-
-                        // if neg disjunction
-                        NEG_DISJUNCTION => {
-
-                            // get values
-                            let b = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // get values
-                            let a = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // do calculations
-                            let result = a || b;
-                            val_stack.push(!result);
-                        }
-
-                        // if conjunction
-                        CONJUNCTION => {
-
-                            // get values
-                            let b = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // get values
-                            let a = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // do calculations
-                            let result = a && b;
-                            val_stack.push(result);
-                        }
-
-                        // if neg conjunction
-                        NEG_CONJUNCTION => {
-
-                            // get values
-                            let b = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // get values
-                            let a = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // do calculations
-                            let result = a && b;
-                            val_stack.push(!result);
-                        }
-
-                        // if exclusive disjunction
-                        EX_DISJUNCTION => {
-
-                            // get values
-                            let b = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // get values
-                            let a = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // do calculations
-                            let result = (!a && b) || (a && !b);
-                            val_stack.push(result);
-                        }
-
-                        // if neg exclusive disjunction
-                        NEG_EX_DISJUNCTION => {
-
-                            // get values
-                            let b = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // get values
-                            let a = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // do calculations
-                            let result = (!a && b) || (a && !b);
-                            val_stack.push(!result);
-                        }
-
-                        // if implication
-                        IMPLICATION => {
-
-                            // get values
-                            let b = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // get values
-                            let a = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // do calculations
-                            let result = !a || b;
-                            val_stack.push(result);
-                        }
-
-                        // if neg implication
-                        NEG_IMPLICATION => {
-
-                            // get values
-                            let b = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // get values
-                            let a = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // do calculations
-                            let result = !a || b;
-                            val_stack.push(!result);
-                        }
-
-                        // if equivalence
-                        EQUIVALENCE => {
-
-                            // get values
-                            let b = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // get values
-                            let a = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // do calculations
-                            let result = a==b;
-                            val_stack.push(result);
-                        }
-
-                        // if neg equivalence
-                        NEG_EQUIVALENCE => {
-
-                            // get values
-                            let b = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // get values
-                            let a = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for disjunction"));
-                                },
-                                Some(val) => val
-                            };
-
-                            // do calculations
-                            let result = a==b;
-                            val_stack.push(!result);
-                        }
-
-                        // if prenegation
-                        PRE_NEGATION => {
-
-                            // add pre negation to op stack
-                            op_stack.push(operator);
-                        }
-
-                        // if post var negation
-                        POST_VAL_NEGATION => {
-                            let val = match val_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no value for negation"));
-                                },
-                                Some(val) => val
-                            };
-
-                            val_stack.push(!val);
-                        }
-
-                        // if post op negation
-                        POST_OP_NEGATION => {
-                            let op = match op_stack.pop() {
-                                None => {
-                                    return Err(io::Error::new(io::ErrorKind::Other, "no operator for negation"));
-                                },
-                                Some(val) => val
-                            };
-
-                            op_stack.push(match flip(op) {
-                                Err(e) => {
-                                    return Err(e);
-                                },
-                                Ok(op) => op
-                            });
-                        }
-
-                        // if else
-                        _ => ()
-                    }
+                    operate(operator,&mut op_stack,&mut val_stack,&mut var_stack,var_map)?;
                 }
 
                 // handle if op is close
@@ -638,6 +640,11 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
         token = get_token(&mut expression);
     }
 
+    // perform the rest of the operations
+    while !op_stack.is_empty() {
+        let operator = op_stack.pop().unwrap();
+        operate(operator,&mut op_stack,&mut val_stack,&mut var_stack,var_map)?;
+    }
 
     // return the result
     if val_stack.is_empty() {
