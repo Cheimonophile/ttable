@@ -570,11 +570,11 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
             Some(Token::Val(val)) => {
                 if !op_stack.is_empty() && *op_stack.last().unwrap() == PRE_NEGATION {
                     val_stack.push(!val);
+                    op_stack.pop();
                 }
                 else {
                     val_stack.push(val);
                 }
-                
             },
 
             // if token is a variable
@@ -583,7 +583,17 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
 
                     // if the variable has been assigned.
                     Some(val) => {
-                        val_stack.push(*val);
+
+                        // if the previous operator is is pre_neg, flip the operator
+                        if !op_stack.is_empty() && *op_stack.last().unwrap() == PRE_NEGATION {
+                            val_stack.push(!*val);
+                            op_stack.pop();
+                        }
+
+                        // push the value to the stack
+                        else {
+                            val_stack.push(*val);
+                        }
                     },
 
                     // if the variable has not been assigned
@@ -604,7 +614,18 @@ fn evaluate(mut expression:String,var_map:&mut HashMap<String,bool>)->io::Result
             },
 
             // if the token is an operator
-            Some(Token::Op(op)) => {
+            Some(Token::Op(mut op)) => {
+
+                // if the previous operator is is pre_neg, flip the operator
+                if !op_stack.is_empty() && *op_stack.last().unwrap() == PRE_NEGATION {
+                    match flip(op) {
+                        Err(_)=>(),
+                        Ok(operator)=>{
+                            op = operator;
+                            op_stack.pop();
+                        }
+                    }
+                }
 
                 // if the previous operators precidence is lower
                 while !op_stack.is_empty() && *op_stack.last().unwrap() != OPEN && prec(op_stack.last().unwrap()).unwrap() > prec(op).unwrap() {
